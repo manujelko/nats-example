@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  nats1:
+    image: nats:latest
+    container_name: nats1
+    networks:
+      - nats-cluster-network
+    ports:
+      - "4222:4222"  # client port
+      - "8222:8222"  # HTTP monitoring port
+      - "6222:6222"  # cluster port
+    command: -m 8222 --cluster nats://0.0.0.0:6222 --cluster_name test_cluster
+
+  nats2:
+    image: nats:latest
+    container_name: nats2
+    networks:
+      - nats-cluster-network
+    ports:
+      - "5222:4222"
+    command: --cluster nats://0.0.0.0:6222 --routes nats://nats1:6222 --cluster_name test_cluster
+
+  nats3:
+    image: nats:latest
+    container_name: nats3
+    networks:
+      - nats-cluster-network
+    ports:
+      - "6223:4222"
+    command: --cluster nats://0.0.0.0:6222 --routes nats://nats1:6222 --cluster_name test_cluster
+
+networks:
+  nats-cluster-network:
+    name: nats-cluster-network
